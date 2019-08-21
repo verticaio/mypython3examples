@@ -1,0 +1,72 @@
+Pickle module python serialization uchun istifade olunur.
+Pickling python objectlerini byte streamlarina  cevirir yeni binary file(serialization’, ‘marshalling’, or ‘flattening)
+Unpickling eksine edir.
+
+Python Modullari for serialization
+marshal is a more primitive module for serialization in Python, and its purpose is to support .pyc files.
+json is a standard library module for serialization and deserialization with Python.
+
+To serialize and deserialize, we use functions pickle dumps() and loads(),
+
+Data serialization is the concept of converting structured data into a format that allows it to be shared or stored in such a way that its original structure to be recovered. In some cases, the secondary intention of data serialization is to minimize the size of the serialized data which then minimizes disk space or bandwidth requirements
+---------------------------------------------------------------------------------------
+x = 7
+import os
+
+import pickle
+
+f = open("abc.txt", 'r+b')
+
+print(pickle.dump(x,f))
+
+print(pickle.dumps(x))
+
+f.seek(0)
+pickle.load(f)
+
+
+grades = { 'Alice': 89, 'Bob': 72, 'Charles': 87 }
+#Use dumps to convert the object to a serialized string
+serial_grades = pickle.dumps( grades )
+#Reverse
+noserial_grades = pickle.loads(serial_grades)
+print(serial_grades)
+print(noserial_grades)
+---------------------------------------------------------------------------------------
+import pickle
+
+
+class Animal:
+    def __init__(self, number_of_paws, color):
+        self.number_of_paws = number_of_paws
+        self.color = color
+
+
+class Sheep(Animal):
+    def __init__(self, number_of_paws, color):
+        Animal.__init__(self, number_of_paws, color)
+
+
+mary = Sheep('9', 'White')
+
+print(str.format("My sheep mary is {0} and has {1} paws", mary.color, mary.number_of_paws))
+
+# Create Serialize object
+my_pickled_mary1 = pickle.dumps(mary)
+print("Would you like to see her pickled? Here she is!")
+print(my_pickled_mary1)
+
+# Write to file
+binary_file = open('my_pickled_mary.bin', mode='wb')
+my_pickled_mary2 = pickle.dump(mary, binary_file)
+binary_file.close()
+
+# Now, let's unpickle our sheep Mary creating another
+dolly = pickle.loads(my_pickled_mary1)
+
+# print(str.format("My sheep dolly is {0} and has {1} paws", dolly.color, dolly.number_of_paws))
+
+dolly.color = "black"
+dolly.number_of_paws = 9
+print(str.format("Dolly is {0} , {1}", dolly.color, dolly.number_of_paws))
+print(str.format("Mary is {0} , {1} ", mary.color, mary.number_of_paws))

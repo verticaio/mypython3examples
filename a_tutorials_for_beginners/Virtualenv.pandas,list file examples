@@ -1,0 +1,19 @@
+Install Library with virtualenvirrometn
+
+First, you need to activate your virtualenv on Windows.
+
+virtualenv venv
+ venv/bin/activate  # activate your virtualenv on Windows
+or on Unix like systems:
+
+virtualenv venv
+cd venv 
+source bin/activate
+and then you can install pandas via pip:
+
+pip install pandas
+
+
+
+https://stackabuse.com/reading-and-writing-lists-to-a-file-in-python/
+https://gis.stackexchange.com/questions/72458/export-list-of-values-into-csv-or-txt-file

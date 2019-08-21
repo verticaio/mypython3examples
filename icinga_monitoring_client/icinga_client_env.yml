@@ -1,0 +1,90 @@
+---
+- name: Icinga Client Config
+  hosts: servers
+  vars:
+      google: 8.8.8.8
+      icinga_host: 192.168.1.2
+      port: 5665
+  tasks:
+
+    - shell: |
+        ping -W 2 -c 1 {{ google }}
+      ignore_errors: yes
+      register: internet_checking
+     
+    - debug:
+        msg: "Check Internet Connection"
+      when: internet_checking
+
+    - wait_for: host={{ icinga_host }} port={{ port }} delay=0  timeout=1
+      ignore_errors: yes
+      register: icinga_checking
+  
+    - debug:
+        msg: "{{ icinga_host }} host reachable to {{ port }} from {{ ansible_default_ipv4.address }} "
+      when: icinga_checking
+
+    - shell: |
+        cd /etc/yum.repos.d/
+        mkdir old
+        mv *.repo old/
+      ignore_errors: yes
+
+    - shell: |
+         subscription-manager remove --all
+         subscription-manager unregister
+         subscription-manager clean
+         subscription-manager register --username username --password password --auto-attach
+      register: subs_checking
+    
+    - name: Print Success Subsciption
+      debug:
+        msg: "Subsciption Success"
+      when: subs_checking
+
+    - shell: |
+         yum repolist
+      register: yum_checking
+   
+    - name: Yum Check
+      debug:
+        msg: "Success"
+      when: yum_checking
+   
+    - shell: |
+        cd /tmp
+        wget https://dl.fedoraproject.org/pub/epel/epel-release-latest-7.noarch.rpm
+        yum install epel-release-latest-7.noarch.rpm -y
+      register: epel_checking
+
+    - name: Install expect package
+      shell: |
+        yum install expect -y
+
+    - name: Install Icinga RPM  
+      yum: name="https://packages.icinga.com/epel/icinga-rpm-release-7-latest.noarch.rpm" update_cache=yes state=latest
+      when: epel_checking
+      register: icinga_rpm_checking
+
+    - name: Install Nagios Plugin 
+      yum: name="nagios-plugins-all" update_cache=yes state=latest
+      when: icinga_rpm_checking
+      register: nagious_checking
+    
+    - name: Install Icinga
+      yum: name="icinga2" update_cache=yes state=latest
+      when: nagious_checking
+      register: icinga_install_checking
+
+    - shell: |
+        icinga2 feature disable checker
+        icinga2 feature enable api
+      when: icinga_install_checking
+      register: icinga_enable_api
+
+    - name: writing hostname_output in ansible node in file on ansible node
+      lineinfile:
+        line: "{{ ansible_default_ipv4.address }},{{ ansible_facts['nodename'] }}"
+        dest: /etc/ansible/projects/generalIBM/icinga/inventory.txt
+        state: present
+      delegate_to: 127.0.0.1

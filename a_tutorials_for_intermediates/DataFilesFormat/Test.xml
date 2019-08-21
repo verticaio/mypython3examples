@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<genre catalogue="Pop">
+    <song title="No Tears Left to Cry">
+        <artist>Ariana Grande</artist>
+        <year>2018</year>
+        <album>Sweetener</album>
+    </song>
+    <song title="Delicate">
+        <artist>Taylor Swift</artist>
+        <year>2018</year>
+        <album>Reputation</album>
+    </song>
+    <song title="Mrs. Potato Head">
+        <artist>Melanie Martinez</artist>
+        <year>2015</year>
+        <album>Cry Baby</album>
+    </song>
+</genre>

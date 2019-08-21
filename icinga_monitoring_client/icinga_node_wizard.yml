@@ -1,0 +1,28 @@
+---
+- name: Icinga Client Node Wizard
+  hosts: servers
+  tasks:
+    - name: Copy Node Wizard Sh script and inventory.txt file
+      copy:
+        src: ./{{ item }}
+        dest: /root
+        backup: yes
+        mode: 0774
+      with_items:
+        ['inventory.txt','icinga_node_wizard.sh']
+      register: copy_checking
+
+    - name: Executed shell script on remote server
+      command: sh /root/icinga_node_wizard.sh
+      when: copy_checking
+      register: check_executed_script
+
+    - shell: |
+        systemctl restart icinga2
+        systemctl enable icinga2
+      when: check_executed_script
+    - debug:
+        msg: "Node Wizard Script succesfuly executed on remote server"
+      when: check_executed_script
+
+

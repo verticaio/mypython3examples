@@ -1,0 +1,65 @@
+Periodically push date to server
+
+It might be handy to be able to push data periodically without needing to open connection again and again. Here is an example what I did when I want to push row by row two column table.
+
+# client
+
+import socket
+
+soc = socket.socket(socket.AF_INET, socket.SOCK_STREAM)  
+soc.connect(("127.0.0.1", 12345))
+
+import random  
+data = zip([random.randint(1,1000) for i in range(1000)],  
+ [random.randint(1,1000) for i in range(1000)])
+
+for x, y in data:  
+    # send x and y separated by tab 
+    data = "{}\t{}".format(x,y)
+    soc.sendall(data.encode("utf8"))
+
+    # wait for response from server, so we know
+    # that server has enough time to process the
+    # data. Without this it can make problems
+
+    if soc.recv(4096).decode("utf8") == "-":
+        pass
+
+# end connection by sending this string
+soc.send(b'--ENDOFDATA--')  
+
+and the server side is as follows (start_server function is same as above):
+
+# server
+def rec_data(conn, MAX_BUFFER_SIZE):  
+    input_from_client_bytes = conn.recv(MAX_BUFFER_SIZE)
+
+    import sys
+    siz = sys.getsizeof(input_from_client_bytes)
+    if  siz >= MAX_BUFFER_SIZE:
+        print("The length of input is probably too long: {}".format(siz))
+
+    input_from_client = input_from_client_bytes.decode("utf8").rstrip()
+
+    return input_from_client
+
+def client_thread(conn, ip, port, MAX_BUFFER_SIZE = 88888):
+
+    # read lines periodically without ending connection
+    still_listen = True
+    while still_listen:
+        input_from_client = rec_data(conn, MAX_BUFFER_SIZE)
+
+        # if you receive this, end the connection
+        if "--ENDOFDATA--" in input_from_client:
+            print('--ENDOFDATA--')
+            conn.close()
+            print('Connection ' + ip + ':' + port + " ended")
+            still_listen = False
+        else:            
+            splin = input_from_client.split('\t')
+
+            print("{}, {}".format(splin[0], splin[1]))
+
+            # tell client that we can accept another data processing
+            conn.sendall("-".encode("utf8"))

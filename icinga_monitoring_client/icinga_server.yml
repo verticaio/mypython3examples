@@ -1,0 +1,24 @@
+---
+- name: Icinga Server Config
+  hosts: icinga_mon_server
+  tasks:
+   
+    - name: Copy Icinga Server Sh script and inventory.txt file
+      copy:
+        src: ./{{ item }}
+        dest: /root
+        backup: yes
+        mode: 0774
+      with_items:
+        ['inventory.txt','icinga_server_config.sh']
+      register: copy_checking
+
+    - name: Executed shell script on remote server
+      command: sh /root/icinga_server_config.sh
+      when: copy_checking
+      register: check_executed_script
+
+    - name: Copy inventory file to local ansible  from icinga remote host
+      fetch:
+        src: /root/inventory.txt
+        dest: /etc/ansible/projects/generalIBM/icinga/inventory.txt

@@ -1,0 +1,1 @@
+### TASK, compare ip address between csv(it contain all my infra inventory data) and server address monitoring by zabbix and then I will install zabbix agent to servers in that not exist zabbix mysql database

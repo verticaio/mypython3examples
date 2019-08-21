@@ -1,0 +1,24 @@
+---
+- name: Icinga Server Config
+  hosts: icinga_mon_server
+  tasks:
+   
+    - name: Copy Icinga Server Signing Sh script file
+      copy:
+        src: ./{{ item }}
+        dest: /root
+        backup: yes
+        mode: 0774
+      with_items:
+        ['icinga_server_sign_ca.sh']
+      register: copy_checking
+
+    - name: Executed shell script on remote server
+      command: sh /root/icinga_server_sign_ca.sh
+      when: copy_checking
+      register: check_executed_script
+
+    - debug:
+        msg: "Signging client requests succesfully"
+      when: check_executed_script
+

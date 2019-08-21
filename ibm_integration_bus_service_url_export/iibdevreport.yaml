@@ -1,0 +1,23 @@
+---
+- name: Report All IIB Dev Service URL
+  hosts: ibm_integ_bus-servs
+  serial: 1
+  tasks:
+    - name: Extract Node Url From Remote Servers
+      shell: |
+        source  /opt/IBM/iib-10.0.0.14/server/bin/mqsiprofile
+        node_names=$(/opt/IBM/iib-10.0.0.14/server/bin/mqsilist | grep -iE 'running' | awk  '{print $4}' | grep -v completion | cut  -d\' -f2)
+        for i in $node_names ; do  mqsilist | grep -w $i| awk '{print $8}'; done
+      environment:
+        DISPLAY: :0.0
+      register: node_url
+
+    - name: Extract Hostname From Remote Servers
+      shell: |
+        hostname
+      register: hostname
+
+    - name: Execute Python Script and write to file
+      local_action: shell python36 ./python_elementTree_URL.py  {{ hostname.stdout }}  {{  item }}  >> ./report.txt
+      with_items: "{{ node_url.stdout_lines }}"
+      ignore_errors: yes
